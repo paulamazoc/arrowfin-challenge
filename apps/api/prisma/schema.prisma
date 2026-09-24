@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +5,75 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum AccountStatus {
+  active
+  restricted
+  closed
+}
+
+enum FillSide {
+  BUY
+  SELL
+}
+
+model Broker {
+  id      String   @id
+  name    String
+  traders Trader[]
+}
+
+model Trader {
+  id       String    @id
+  brokerId String
+  broker   Broker    @relation(fields: [brokerId], references: [id])
+  accounts Account[]
+
+  @@index([brokerId, id])
+}
+
+model Account {
+  id       String        @id
+  traderId String
+  balance  Decimal       @db.Decimal(18, 2)
+  status   AccountStatus
+  trader   Trader        @relation(fields: [traderId], references: [id])
+  fills    Fill[]
+
+  @@index([traderId, status])
+}
+
+model Instrument {
+  symbol        String       @id
+  pointValueUsd Decimal      @db.Decimal(18, 4)
+  marketPrice   MarketPrice?
+  fills         Fill[]
+}
+
+model MarketPrice {
+  symbol     String     @id
+  markPrice  Decimal    @db.Decimal(18, 8)
+  asOf       DateTime
+  instrument Instrument @relation(fields: [symbol], references: [symbol])
+}
+
+model Fill {
+  id               String     @id
+  accountId        String
+  instrumentSymbol String
+  side             FillSide
+  quantity         Int
+  price            Decimal    @db.Decimal(18, 8)
+  commissionUsd    Decimal    @db.Decimal(18, 4)
+  filledAt         DateTime
+  orderId          String
+  // CME Globex session open date (17:00 America/Chicago). Derived at import from filled_at.
+  // Production trading-calendar logic would require holidays, early closes, and a dedicated calendar service.
+  sessionDate      DateTime   @db.Date
+  account          Account    @relation(fields: [accountId], references: [id])
+  instrument       Instrument @relation(fields: [instrumentSymbol], references: [symbol])
+
+  @@index([accountId, filledAt])
+  @@index([accountId, sessionDate])
 }
