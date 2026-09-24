@@ -1,0 +1,199 @@
+---
+description: ArrowFin technical assessment project context and collaboration rules
+alwaysApply: true
+---
+
+# Project Context
+
+This repository contains a time-boxed Senior Full Stack Engineer / Technical Lead assessment for ArrowFin.
+
+The feature being implemented is a Trader Daily Snapshot for a multi-tenant futures trading platform.
+
+The assessment is intentionally time-constrained. Prefer pragmatic, defensible engineering decisions over completeness, abstraction, or polish.
+
+## Technology Stack
+
+Frontend:
+- Next.js 15+ App Router
+- React
+- TypeScript
+- Tailwind CSS
+- TanStack Query
+
+Backend:
+- NestJS
+- TypeScript
+- Prisma
+- PostgreSQL
+
+Real-time:
+- WebSockets
+
+Architecture:
+- Clean/hexagonal principles where they provide concrete value
+- Avoid ceremonial or unnecessary abstractions
+
+The repository is organized as:
+
+- apps/api
+- apps/web
+- dataset
+- README.md
+- SECURITY.md
+
+# Domain Context
+
+The application serves multiple brokers on shared infrastructure.
+
+`broker_id` is the tenant boundary.
+
+Cross-tenant data access is a P0 security failure.
+
+Trader identity and tenant identity must come from authenticated server-side context. Never trust client-provided trader or broker identifiers for authorization.
+
+The primary feature is the Trader Daily Snapshot:
+- open positions
+- realized P&L
+- unrealized P&L
+- risk score
+- real-time updates
+
+The provided dataset is authoritative for this assessment.
+
+Important dataset characteristics:
+- dataset "now" is 2026-08-25T14:30:00Z
+- futures sessions do not correspond to calendar days
+- contract sizes differ by instrument
+- commissions are per contract, per side
+- orders may have multiple fills
+- positions may remain open
+- accounts may be inactive or have no balance
+- traders may have no trades
+- traders.csv contains regulated PII and unsanitized free-text fields
+
+Do not silently invent assumptions when the dataset or requirements are ambiguous.
+
+# Security Priorities
+
+Security and tenant isolation are first-class design constraints, not afterthoughts.
+
+Always consider:
+1. tenant isolation
+2. authentication/authorization
+3. PII exposure
+4. logging of sensitive information
+5. IDOR risks
+6. WebSocket tenant isolation
+
+Never log complete trader, account, position, fill, or snapshot objects without explicitly discussing the PII implications first.
+
+Never allow a client-provided `brokerId` to determine authorization scope.
+
+WebSocket tenant scope must be established from authenticated identity at connection time.
+
+# Working Relationship
+
+Act as a senior engineering peer, not an autonomous implementation agent.
+
+The developer owns architectural and product decisions.
+
+Before making a non-trivial architectural decision:
+1. identify the decision,
+2. explain the recommended option briefly,
+3. mention meaningful alternatives/tradeoffs,
+4. wait for confirmation if the choice materially affects architecture, security, domain behavior, dependencies, or scope.
+
+Do not make broad or abrupt changes without explicit approval.
+
+Do not:
+- refactor unrelated code,
+- rename or move major modules,
+- introduce new architectural layers,
+- add libraries,
+- change database strategy,
+- change authentication strategy,
+- change public API contracts,
+- add infrastructure,
+- implement additional assessment tasks,
+unless explicitly requested.
+
+When asked to implement a specific step, implement only that step.
+
+If another change would be useful, recommend it instead of silently implementing it.
+
+# Timebox
+
+This assessment is targeting approximately 2 hours of implementation time.
+
+Optimize for:
+- correctness
+- security
+- clarity
+- explainability
+- demonstrable functionality
+
+Do not optimize for:
+- production completeness
+- maximum abstraction
+- visual polish
+- speculative extensibility
+- excessive test coverage
+
+Prefer the smallest implementation that clearly demonstrates senior engineering judgment.
+
+# Code Style
+
+Prefer:
+- small focused modules
+- explicit types
+- descriptive names
+- straightforward control flow
+- framework conventions
+- dependency injection where useful
+- pure functions for calculations that benefit from testing
+
+Avoid:
+- unnecessary generic abstractions
+- premature design patterns
+- excessive comments
+- deeply nested abstractions
+- clever code
+- large generated files
+
+Code should be easy to explain during a live technical interview.
+
+# Testing
+
+Tests should target meaningful behavior rather than coverage metrics.
+
+Prioritize:
+- snapshot calculation correctness
+- tenant isolation/security boundaries
+
+Do not generate large test suites unless requested.
+
+# AI Collaboration
+
+Never present generated code as unquestionably correct.
+
+After implementation:
+- summarize what changed
+- explain important design decisions
+- identify assumptions
+- identify security implications
+- mention anything the developer should understand before committing
+
+When reviewing existing code, do not modify it unless explicitly asked.
+
+If asked to review first, review first.
+
+# Assessment Scope
+
+Do not proceed to another assessment task automatically.
+
+At the end of each requested task:
+1. stop,
+2. summarize the result,
+3. report tests/build status,
+4. identify unresolved issues,
+5. wait for the developer's next instruction.
