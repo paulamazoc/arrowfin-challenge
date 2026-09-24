@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { SnapshotCalculator } from './snapshot.calculator.js';
 import { SnapshotController } from './snapshot.controller.js';
+import { SnapshotGateway } from './snapshot.gateway.js';
 import { SnapshotRepository } from './snapshot.repository.js';
 import { SnapshotService } from './snapshot.service.js';
 
@@ -11,6 +12,7 @@ import { SnapshotService } from './snapshot.service.js';
   providers: [
     SnapshotService,
     SnapshotRepository,
+    SnapshotGateway,
     {
       provide: SnapshotCalculator,
       useFactory: () => new SnapshotCalculator(),
